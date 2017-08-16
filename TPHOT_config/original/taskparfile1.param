@@ -1,0 +1,278 @@
+# TPHOT PARAMETER FILE
+# It is STRONGLY recommended to give meaningful
+# filenames to all output files and directories, indicating
+# the dataset(s) from which they come.
+# See below for parameters meaning verbose explanation.
+
+#-------------------------- PIPELINE ------------------------------#
+# 1st pass
+order standard 
+#order FIRstandard 
+#order priors, convolve, fit, diags, dance, plotdance 
+#order positions, fit, diags, dance, plotdance
+
+#------------------------ PRIORS STAGE ----------------------------#
+
+# Choose priors types in use:
+usereal	 	True			     # Real 2-d profiles
+usemodels	True			     # Analytical 2-d profiles
+useunresolved	True			     # Unresolved point-like sources
+
+# Real 2-d profiles
+hiresfile       HRI.fits		     # Detection (high resolution image) 
+hirescat        HRI.cat	  	   	     # 9-columns catalog of high-resolution real priors
+hiresseg        HRI.seg.fits 	   	     # Segmentation Image (needed for real priors only)
+normalize       true			     # Normalize cutout fluxes to 1
+subbckg		True		   	     # Subtract background from HRI stamps
+savecut		true			     # Store cutouts
+cutoutdir       cutouts		   	     # Output directory for all cutout stamps of priors
+cutoutcat       cutouts/_cutouts.cat	     # Name of the cutout catalog, with cutoutdir as prefix
+
+# Analytical 2-d models
+modelscat	models/models.cat    	     # 9-columns catalog of model priors
+modelsdir	models		     	     # Directory with stamps of models priors 
+
+culling		false		   	     # Rejection of sources (False = after priors)
+
+# Unresolved point-like sources
+poscat		pos.cat		   	     # 3-columns catalog of unresolved, point-like priors
+psffile		psf.fits		     # LRI PSF (needed for point like sources only)
+
+#------------------------ CONVOLUTION STAGE -----------------------#
+
+loresfile       LRI.fits  	      	     # Measure (low resolution) image
+loreserr        LRI.rms.fits		     # RMS/Weight map of LRI
+errtype         rms			     # rms or wht
+rmsconstant     1			     # Constant used to automatically generate RMS map if not given
+relscale        1		   	     # Pixel ratio between measure and detection image (must be integer)
+
+FFTconv		true			     # Use FFT for convolution of cutouts
+multikernels	false			     # Use multikernels (true for second pass only)
+mkext		false			     # Use external list of kernels
+kernelfile      kernel.fits		     # Kernel file     
+
+templatedir     templates		     # Output directory for model templates
+templatecat	templates/_templates.cat     # Name of the templates catalog, with templatedir as prefix
+
+#------------------------ FITTING STAGE ----------------------------#
+
+# Filenames:
+fitpars	         tpipe_tphot.param_pass1	     # Paramfile to be created for fitter
+tphotcat         lores_tphot.cat_pass1	     # OUTPUT CATALOG (MAIN OUTPUT)
+tphotcell        lores_tphot.cell_pass1	     # Cells output catalog
+tphotcovar       lores_tphot.covar_pass1     # Covariance output catalog
+
+# Control parameters:
+fitting		coo			     # "coo" or 0 for cells-on-objects; "single" or -1 for single fit; "single!" or -10 for 
+					     # optimized single fit; "cell_xdim,cell_ydim,cell_overlap" for grid of cells
+cellmask        true			     # Mask bad pixels when fitting
+maskfloor       1e-9			     # Threshold for masking
+fitbackground	false			     # Fit a constant background
+fit_loc_bkgd	0			     # Fit a background to each template; enter ID offset, 0 = do not fit 
+writecovar      true			     # Output detailed information on the covariance matrix
+
+threshold	0.0			     # Only fit the central part of sources, where flux>threshold*maxflux
+linsyssolver	lu 			     # Matrix inversion method [options: ibg, cholesky, lu] 
+clip		false			     # Clip out large negative fluxes and re-do the fit
+rmscheck	0			     # Exclude from fit sources having RMS pixels values larger than this. 
+					     # If 0, don't check
+
+fluxpriorscat	none			     # Catalog listing flux priors in LRI (format #ID flag flux error)
+residstats	false			     # Computes statistics on residuals
+
+#------------------------- DIAGNOSTICS STAGES ----------------------#
+
+modelfile       lores_collage_pass1.fits     # Name of output model image (also used for residual image)
+
+exclfile	none			     # File containing a list of IDs to be excluded 
+					     # from model and residual images (Optional)
+residstats	false			     # Output statistics on residual image
+
+# Dance:	
+dzonesize       20			     # Pixels size of region in which PSF shift is computed
+maxshift        1.0			     # Maximum allowed PSF shift in LRI pixelsize
+nneighinterp	100			     # Number of neighbors over which to smooth the shifts. 0 means "all neighbors within R"; < 0 means no smoothing (see below)
+ddiagfile       ddiags.txt		     # Name of output file
+dlogfile        dlog.txt
+dancefft	false			     # Use FFT to cross-correlate model image and LRI
+
+
+#....................................................................
+#....................................................................
+
+
+################# PARAMETERS MEANING ###############################
+#------------------------- PIPELINE -------------------------------#
+# Standard runs can be achieved setting
+# <order standard>
+# or
+# <order standard2>
+#
+# For FIR processing, use <order FIRstandard> or <order FIRstandard2>
+#
+# *** Command line options overwrite parameters given in this file ***
+#
+# Standard firstpass run:
+# *** order priors, convolve, fit, diags, dance, plotdance
+# The typical firstpass run contains all the valid stages. 
+# The stage "priors" allows for an automatic re-construction
+# of the pipeline depending on the input data given
+# in the following sections (see below). 
+# Standard second pass run:
+# *** order convolve, fit, diags, archive
+# This is a typical secondpass run, using the multikernel option to
+# regenerate templates using spatially varying transfer kernels
+# generated by the dance in the previous pass.
+# NOTE that the input must be consistent with the priors
+# previous pass.
+# The archive stage creates a directory after the name of the LRI, 
+# with some specifications, and archives the products of both runs.
+#
+#------------------------- PRIORS STAGE ----------------------------#
+# TPHOT can handle three different types of priors:
+# real cutout from a detection image,
+# unresolved point-like sources, analytical 2D models. 
+# The different types of priors can be mixed togheter.
+# IMPORTANT: each prior must have an UNIQUE identificative number
+# (ID) to avoid errors. The user must be careful to give
+# the correct information in this paramfile.
+# Select the priors to be used by switching
+# on/off the relative keywords: usereal, usemodels, useunresolved.
+# *** hiresfile: the high resolution, detection image. 
+# If a catalog and a segmentation map are given in the two
+# subsequent entries (hirescat and hiresseg), 
+# cutouts will be created out of this image. 
+# It is necessary if a catalog of "real" or model priors will
+# be used. The catalog hirescat must be in a standard
+# format: #id x y xmin ymin xmax ymax background flux
+# *** poscat: a catalog of positions for unresolved,
+# point-like sources. No HRI image/segmentation are needed,
+# while the PSF to be used to create the models is mandatory.
+# The catalog must be in the standard format #id x y.
+# *** modelscat: a catalog (in standard format
+# #id x y xmin ymin xmax ymax background flux) of
+# model priors. modelsdir is the directory in which the stamps
+# of the models are stored. A separate stand-alone Python module,
+# galfit2tphot.py, can be used to convert Galfit outputs
+# (stamps in .fits format with arbitrary names and 9 columns 
+# catalog with x y positions referred to the center of the stamp)
+# into TPHOT-readable input, in the correct HRI reference frame.
+# Models with two or more components can be processed, but
+# each component must be trated as a separated object,
+# with a different ID, and a catalog for each component must
+# be given. Catalogs for each component must have the same name, 
+# but ending with "_1", "_2" etc.; put the "_1" catalog
+# in the paramfile. IMPORTANT: two components of 
+# the same object should not have EXACTLY identical positions.
+# *** culling: if True, objects in the catalog (real priors and/or models) 
+# but not falling into the lowres image will not be processed; if
+# it is false, all objects in the catalog will be processed
+# (useful for storing cutouts for future reuse on different
+# datasets) and the selection of objects will be done before
+# the convolution stage.
+# *** subbckg: if True, subtract the value given in the input
+# catalog from each cutout stamp.
+# *** cutoutdir: the directory containing the cutouts.
+# *** cutoutcat: the catalog of the cutouts, containing
+# the flux measured within the cutout area (which may be different
+# from the SEx_flux given in the input catalog)
+# ---> Note that these are output parameters if you start from the 
+# priors/cutout stage; they are input parameters for the convolve stage.
+# *** normalize: determines whether the cutouts will be
+# normalized or not; it is normally set to true, so that the
+# final output catalog will contain fluxes, rather than colors.
+#-------------------------- CONVOLUTION STAGE -----------------------#
+# *** loresfile, loreserr: the low resolution measure and rms images.
+# TPHOT is designed to work with an RMS map as the error map,
+# but it will also accept a weight map, or a single constant
+# value of the RMS from which an RMS map is generated. The
+# errtype specifies which kind of error image is provided.
+# For best results, use a source-weighted RMS map, to prevent
+# the bright objects from dominating the fit.
+# *** relscale: the relative pixel scale between the two images.
+# For example if the hires images has a pixel scale of 0.1
+# arcsec/pixel, and the lores image has a pixel scale of 0.5
+# arcsec/pixel, the value of relscale should be 5. If LRI has been 
+# rescaled to HRI pixscale, relscale = 1.
+# *** Parameters relating to the transfer kernel:
+# The transfer kernel must be a FITS image on the same
+# pixel scale as the high res image. It should contain
+# a centered, normalized image T such that
+# hires PSF convolved with T = lores PSF.
+# FFTconv is True if the convolution of cutouts with
+# the smoothing kernel is to be done in Fourier space (FFTW3).
+# If the run is a second pass, or in general a file containing
+# XY shift to take into account local registration of
+# kernels, multikernels option must be set to True.
+# TPHOT supports the use of local/individual kernels: to use this 
+# option, set the mkext value to true, and provide a KERNELS
+# directory with kernel for source 1 named KERNEL_1.fits, etc.
+# (if using point-like priors, provide a PSFS directory
+# with PSF_1.fits, etc.)
+# *** templatedir: the directory containing the templates created
+# in the convolve stage, listed in the catalog templatecat.
+# ---> Note that these are output parameters for the convolve stage,
+# and an input parameter for all subsequent stages.
+#--------------------------- FITTING STAGE ------------------------------#
+# *** Filenames:
+# These are all output parameters. The "tfitpars" file
+# specifies the name of the special parameter file for the fitting
+# stage that will be generated from the parameters in this file.
+# The others are filenames for the output catalog, cell, and
+# covariance files, respectively.
+# *** Control parameters:
+# These are the most important control parameters.
+# fitting: this keyword tells t-phot which method to use
+# to perform the fitting. 
+# cellmask: if true, uses a mask to exclude pixels from the fit which
+# do not contain a value of at least "maskfloor" in
+# at least one template. This is necessary because
+# of the cell growth. maskfloor should be set to a value at which 
+# it's okay to clip the templates.
+# fitbackground must be se to true to estimate a constant background
+# for the whole image. To include local background fitting,
+# set the value of fit_loc_bkgd to an intenger: background templates
+# will add this value to the ID of the corresponding true source. 
+# writecovar: if true, writes the covariance information out to the 
+# covar file.
+# *** Options:
+# Here the different possibilities for solving the linear system 
+# are given. "Threshold" forces to use a threshold on
+# the flux to only use the central parts of the objects.
+# "LINSYS_SOLVER" gives the chosen soltion method: LU, Cholesky 
+# or Iterative Biconjugate Gradient (IBG) method. LU is default.
+# "Clip" tells whether to loop on the sources escluding negative
+# solutions.
+# STANDARD TFIT MODE: Threshold=0.0, SOLVER=lu, Clip=False
+# *** rmscheck is a threshold to exclude from the fit objects having
+# even one single pixel with RMS value higher than the given value.
+# *** fluxpriorscat is a catalog giving constraints for the fluxes of the
+# prior sources.
+
+#----------------------- DIAGNOSTICS STAGES -----------------------------#
+# *** modelfile: the FITS file that will contain the collage made by
+# multiplying each template by its best flux and dropping it into the
+# right place. An additional diagnostic file will be created: it will
+# contain the difference image (loresimage - modelfile). Its filename
+# will be created by prepending "resid_" to the modelfile.
+# ***exclfile: Optional list of IDs (one per row) which will be 
+# excluded from model and residual images.
+# *** Dance:
+# dzonesize specifies the size of the minimum region over which a
+# cross-correlation will be calculated. 
+# maxshift specifies the maximum size of the x/y shift, in lores
+# pixels, which is considered to be valid. Any shift larger than this
+# is considered spurious and dropped from the final results, and
+# replaced by an interpolated value from the surrounding zones.
+# nneighinterp is the number of neighbors over which the estimated shifts
+# are going to be smoothed to yield the final shifts. If set to 0 all
+# neighbors within a radius 3*sqrt(AREA_IMAGE/NSOURCES) will be used. 
+# If set to a value < 0 no smoothing will be used.
+# ddiagfile is an output parameter for the dance stage, and an input
+# parameter for the plotdance stage.
+# dlogfile is an output parameter; it simply contains the output from
+# the crosscorrelation process.
+# danceFFT is true if the dance correlation is to be performed
+# using FFT techniques rather than in real pixels space.
+#..................................................................
+#..................................................................
