@@ -1370,7 +1370,6 @@ def main():
     # minimum acceptable magnitude
     min_HST_MAG=np.max([median_HST_mag-3,np.min(MAG),MAG[int(round(len(MAG)*5/100.))] ]) # Don't change it. It is correct!
     # maximum acceptable magnitude
-    stop()
     max_HST_MAG=np.min([median_HST_mag+1,np.max(MAG[MAG<np.max(MAG)])]) # Don't change it! It is correct!
 
     SEL_OK_1=np.array([-1])
@@ -1674,7 +1673,7 @@ def main():
         # ~2" FWHM of both I1 and I2 PSFs, 21 pixels correspond to ~2 PSF's sigma
         # for both IRAC 1 and 2) 
         go_interactive='A'
-        if INTERACT=='I':go_interactive='I' 
+        if INTERACT=='I':go_interactive='I'
         DEPTH_I1_A=image_depth(paths.pwd+files.IRAC_resamp1,radius=21,INTERACT=go_interactive,title='I1 depth computation')
         # convet to uJy Flux using the conversion factor:
         DEPTH_I1_F=3*DEPTH_I1_A*conv_fact                  # 3-sigma depth flux
