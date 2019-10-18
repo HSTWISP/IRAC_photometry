@@ -1025,10 +1025,10 @@ def main():
                             # 'A' automatic, to see all the plots,
                             # 'T' test. Uses different paths and is interactive
     if INTERACT=='T':
-        INTERACT='I' # set INTEARCT keyword to Interactive mode.
+        INTERACT='I' # set INTERACT keyword to Interactive mode.
         TS=1         # activate test mode
     if INTERACT=='P':
-        INTERACT='A' # set INTEARCT keyword to Interactive mode.
+        INTERACT='A' # set INTERACT keyword to Automatic mode.
         TS=1         # activate test mode
         
     paths=Get_paths(TS) # get path definitions. Argument=1 for test, 0 for real run
