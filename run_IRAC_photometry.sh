@@ -3,12 +3,12 @@
 # WISPIPE - IRAC PHOTOMETRY
 # Ivano Baronchelli, 2017
 
-# Call in bash using: > source ./run_IRAC_photometry.py FIELD >& log#.log
+# Call in bash using: > source ./run_IRAC_photometry.sh FIELD >& log#.log
 # Example:
 # if working on Par68:
-# source ./run_IRAC_photometry.py 68 I >& LOG/log68.log
+# source ./run_IRAC_photometry.sh 68 I >& LOG/log68.log
 # or
-# source ./run_IRAC_photometry.py 68 A >& LOG/log68.log
+# source ./run_IRAC_photometry.sh 68 A >& LOG/log68.log
 # Using 'I' or 'A', an interactive or automatic run can be performed
 ##############################################################
 
