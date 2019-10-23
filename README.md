@@ -117,7 +117,7 @@ wisp_path/axe/Parxx/IRAC/Parxx_IRAC_V6.2.tar.gz
      to the IDs in the HST and IRAC catalogs.
 - RESAMPLED IRAC IMAGES: IRAC resampled "sci" and "rms" images are created. Their names are (for par 68, channel 1):
       "WISPS68_ch1_mosaic.resamp_bck_sub.fits" and "WISPS68_ch1_unc.resamp.fits"
-     These images have teh following characteristics:
+     These images have the following characteristics:
        1) Same pixel size as HST J and/or H images.
        2) Pixel orientation identical to HST J and/or H images.
        3) Same total size as J and/or H images.
